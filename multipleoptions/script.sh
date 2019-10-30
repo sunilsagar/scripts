@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author : Sunil Sagar
-# Purpose : To check NodeJS Diskspace , Process and logs post deployment
+# Purpose : 
 # Date : 19 Aug 2018
 
 ## Color Coding
@@ -90,7 +90,7 @@ grep IHS $tmpServer | awk '{print $3}' > IHSHostName
 if [[ "$pre" == "pre" ]]; then
 	CommandToRun="df -Ph"
 else
-	CommandToRun="df -Ph ; echo $singleSeparator;  cd /opt/IBM/HTTPServer70/conf/tcpinst2/web/static/ ; /bin/pwd ; ls -lrt "
+	CommandToRun="df -Ph ; echo $singleSeparator;  cd /IBM/HTTPServer70/conf/tcpinst2/web/static/ ; /bin/pwd ; ls -lrt "
 fi
 
 for i in $(cat IHSHostName); do
@@ -106,7 +106,7 @@ grep 'NodeJS' $tmpServer | awk '{print $3}' > NodeJSHostName
 if [[ "$pre" == "pre" ]]; then
         CommandToRun="df -Ph"
 else
-	CommandToRun="/usr/bin/whoami; echo $singleSeparator ; df -Ph; echo $singleSeparator; cd /usr/nodeapp/dtx-webserver; /bin/pwd; ls -lrt ; echo $singleSeparator; ps -ef|grep node| grep -v root  ; echo $singleSeparator; pm2 status "
+	CommandToRun="/usr/bin/whoami; echo $singleSeparator ; df -Ph; echo $singleSeparator; cd /nodeapp/dtx-webserver; /bin/pwd; ls -lrt ; echo $singleSeparator; ps -ef|grep node| grep -v root  ; echo $singleSeparator; pm2 status "
 fi
 
 for i in $(cat NodeJSHostName); do
@@ -121,7 +121,7 @@ grep WAS $tmpServer | awk '{print $3}' > WASJSHostName
 if [[ "$pre" == "pre" ]]; then
         CommandToRun="df -Ph"
 else
-	CommandToRun="df -Ph; echo $singleSeparator; cd /opt/IBM/WebSphere/AppServer/profiles/tcpinst2/installedApps/WC_tcpinst2_cell; /bin/pwd;  ls -lrt" 
+	CommandToRun="df -Ph; echo $singleSeparator; cd /IBM/WebSphere/AppServer/profiles/tcpinst2/installedApps/inst2_cell; /bin/pwd;  ls -lrt" 
 fi
 
 for i in $(cat WASJSHostName); do
