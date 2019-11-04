@@ -1,0 +1,13 @@
+{
+    "obj": {
+        "name": {"name": "Tom", "version": "Anderson", "build": "Anderson", "provider": "Oracle"},
+        "install_status":1,
+        "products": [
+            {"name": "Java", "version": "1.8.1", "build": "1.8.1-b", "provider": "Oracle", "install_status": 1},
+            {"name": "Confluent", "version": "5.2.1", "build": "5.2.1-b7", "provider": "Confluent", "install_status": 1},
+            {"name": "FluentD", "version": "3.5.1", "build": "3.5.1-a", "provider": "FluentD", "install_status": 0},
+			{"name": "rmax", "install_status": 16200},
+			{"name": "wmax", "install_status": 32200}
+		]
+    }
+}
