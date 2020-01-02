@@ -1,0 +1,104 @@
+Performance Troubleshooting
+For Linux Operating System
+TOP Command
+Command on Server  top
+ 
+
+CPU Load Average:
+Zombie Process:
+%wa (imp): I/O status. Make sure this is close to zero. Higher the number critical will be the health. 
+%hi: H/W interrupts for CPU happening on server
+%si: S/W interrupts for CPU happening on server
+%st: This amount of stolen CPU from server to perform operation on shared virtual server to perform some operation.
+SWAP Memory: It starts when Physical memory is full. Then Swapping will start moving unused memory blocks to SWAP Memory. 
+ 
+
+VMSTAT
+Command on server  vmstat (e.g. vmstat 10 or vmstat 10 5)
+ 
+r: how many processes are waiting for CPU time. Higher the value of r , bad the server is behaving. It means issue with CPU 
+b: wait queue, higher the number of b , it means the issue with disk . 
+swapd: SWAP memory stats.
+free: Free physical memory 
+buff: before I/O operation
+Cache: Mapped by Kernel 
+si: Swap IN, once swap is started. Disk to Physical 
+so: Physical to SWAP 
+bi: Disk I/O, Blocks received from Disk to RAM 
+bo: Disk I/O , Blocks written to Disk 
+in: Number of interrupts per sec
+cs: Context switches, CPU move from one process to other. Higher means issue with CPU.
+ 
+IOSTAT
+Command on Server  iostat
+This provides information related to CPU, Disk
+ 
+
+ 
+
+%iowait is important here
+Gives details about disk read and write per sec. 
+ 
+SAR
+Command on Server  sar
+For current and historical details. Linux Package name - sysstat
+Collective CPU usage
+Memory, SWAP stats
+I/O details on server
+N/W stats
+SAR (historical) on specific time with 10 min of range
+SAR version  sar -V
+sar 1 2  output for every 1 sec for two times
+sar -f /var/log/sa/sa10   CPU stats of 10th (day or date) of the month . 
+sar -P ALL  Report of all cpu as well as all individual cores 
+sar -r  memory stats 
+sar -b  I/O activity (tps  transitions per sec, breads/sec  bytes read per sec )
+sar -p -d  I/O Report of all individual disks 
+sar -w  CPU content (switch to different process)
+sar -q  CPU load avg
+sar -n  Network stats
+sar -n DEV  Enough details for N/W devices for troubleshooting
+ 
+sar -f /var/log/sa/sa1 -s 00:11:00 -e 00:45:00  Output of only with start and end time 
+ 
+LSOF
+Command on Server  lsof
+lsof +D /data  Number of processes opened for directory /data
+lsof /var/log/messages  List the files used by any process
+lsof -c ssh  Listing the files associated with process (such as sshd process)
+lsof /data/  processes running in specific mount point
+lsof -u <user name>  Any specific user
+lsof -p <pid>  For any specific process
+
+FUSER
+Command on server  fuser
+This displays all the files used by a particular user
+fuser -cu /data  This will show user accessing the file-system.
+fuser -ck /data  Kill the users accessing the file-system 
+
+ 
+TCPDUMP
+Command on Server  tcpdump
+tcpdump -i eth0  It will capture all the packets on the N/W interface until interrupted (ctrl +c).
+tcpdump -c 10 -i eth0  It will capture 10 packets 
+tcpdump -w <filename>.pcap -i eth0  Write in file 
+tcpdump -r <filename>.pcap   Read from file
+tcpdump -n -i eth0  Output will be more readable format 
+tcpdump -n -i eth0 tcp  Captures only tcp packets
+tcpdump -n -i eth0 port 80  Captures specific to port 
+tcpdump -i eth0 -s 0 host <destination server IP>  This will capture packet between my server and destination server. So basically it captures packet communication between two servers.
+
+ 
+Top Running process by CPU and Memory
+High Memory processes:
+ps -eo pid,ppid,cmd,%mem,%cpu –sort=-%mem | head 
+ps -eo pmem,pcpu,pidargs | tail -n +2 | sort -rnk 1 | head
+ps -eo pmem,pcpu,vsize,pid,cmd | sort -k 1 -nr | head -10
+ps axo ruser,%mem,comm,pid,euser | sor -nr | head -n 10 
+top -b -o +%MEM | head -n 50 
+-b output top in batch mode
+-o for sorting process
+-n number of lines (processes)
+
+High CPU processes:
+ps -eo pmem,pcpu,pidargs | tail -n +2 | sort -rnk 2 | head
