@@ -1,0 +1,71 @@
+---
+- hosts: labservers
+  tasks:
+          - name: Telegraf Installation
+            block:
+                    - name: Install Telegraf
+                      unarchive:
+                              src: https://dl.influxdata.com/telegraf/releases/telegraf-1.13.4_linux_amd64.tar.gz
+                              dest: /data/sample/metrics
+                              remote_src: yes
+
+                    - name: Start Telegraf
+                      command:
+                              cmd: echo "Starting Telegraf after Installation"
+                      notify:
+                              - telegraf_start
+            when: telegraf_action == "install"
+            ignore_errors: yes
+
+          - name: Telegraf Uninstallation
+            block:
+                    - name: Stop Telegraf Process
+                      command:
+                              cmd: echo "Stopping Telegraf for uninstallation"
+                      notify:
+                              - telegraf_stop
+                    - name: Remove binariy footprnts
+                      file:
+                              path: /data/sampel/metrics/telegraf
+                              state: absent
+            when: telegraf_action == "uninstall"
+
+          - name: Telegraf Start
+            command:
+                    cmd: echo "Starting Telegraf"
+            notify:
+                    - telegraf_start
+            when: telegraf_action == "start"
+
+          - name: Telegraf Stop
+            command:
+                    cmd: echo "Stopping Telegraf"
+            notify:
+                    - telegraf_stop
+            when: telegraf_action == "stop"
+
+          - name: Telegraf Restart
+            command:
+                    cmd: echo "Restarting Telegraf"
+            notify:
+                    - telegraf_stop
+                    - telegraf_start
+            when: telegraf_action == "restart"
+
+          - name: Telegraf Status
+            shell: ps -ef|grep telegraf | grep -v grep
+            ignore_errors: true
+            register: ps
+          - debug:
+                  var: ps.stdout_lines
+
+
+  handlers:
+          - name: telegraf_start
+            shell: nohup /data/sample/metrics/telegraf/usr/bin/telegraf --config /data/sample/metrics/telegraf/etc/telegraf/telegraf.conf > /tmp/telegraf.log 2>&1 &
+            args:
+                    executable: /bin/bash
+          - name: telegraf_stop
+            shell: killall telegraf; sleep 5;
+            args:
+                    executable: /bin/bash
