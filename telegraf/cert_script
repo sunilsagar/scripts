@@ -1,0 +1,50 @@
+#!/bin/bash
+certFile='/opt/ssl/certList.txt'
+touch $certFile
+outputFile='/opt/ssl/optput.txt'
+cat /dev/null > $outputFile
+
+#ls -lrt new.cer |awk '{print $NF}' > $certFile
+
+certCount=$(cat ${certFile}|wc -l)
+if [ "$certCount" -gt 1 ]; then
+  j=0
+else
+  j=1
+fi
+
+for i in $(cat ${certFile})
+do
+  if [ "$certCount" -gt 1 ]; then
+    j=$((j+1))
+  fi
+
+  i_certFile=$(echo $i)
+  j_createDate=$(openssl x509 -noout -in $i -startdate| cut -d'=' -f2 | cut -d 'G' -f1|sed 's/ //1' | sed 's! !\\ !g'|sed 's/ *$//')
+  k_cn_expiry=$(openssl crl2pkcs7 -nocrl -certfile $i | openssl pkcs7 -print_certs -text | grep -E '(Subject:|Not After)' | paste -d" " - -|head -1 | cut -d ':' -f2-4 | cut -d 'G' -f1 | sed 's/ //1' | sed 's! !\\ !g' | sed 's/ *$//')
+  l_int_expiry=$(openssl crl2pkcs7 -nocrl -certfile $i | openssl pkcs7 -print_certs -text | grep -E '(Subject:|Not After)' | paste -d" " - -|head -2 | tail -1 | cut -d ':' -f2-4 | cut -d 'G' -f1 |sed 's/ //1' | sed 's! !\\ !g' | sed 's/ *$//')
+  m_root_expiry=$(openssl crl2pkcs7 -nocrl -certfile $i | openssl pkcs7 -print_certs -text | grep -E '(Subject:|Not After)' | paste -d" " - -|tail -1 | cut -d ':' -f2-4 | cut -d 'G' -f1 |sed 's/ //1' | sed 's! !\\ !g' | sed 's/ *$//')
+  n_validate_check=$(openssl verify -CAfile root.cer -untrusted int.cer $i | awk '{print $2}')
+  o_chain_check=$(openssl crl2pkcs7 -nocrl -certfile $i | openssl pkcs7 -print_certs -text | grep -E '(Subject:)'|wc -l)
+
+  cert_cn=$(openssl x509 -in $i -noout -subject | awk -F ',' {'print $NF'}| cut -d '=' -f2 | sed 's/ //1')
+  issuer_cn=$(openssl x509 -noout -in $i -issuer | awk -F ',' {'print $NF'}| cut -d '=' -f2 | sed 's/ //1' | sed 's! !\\ !g')
+  ca_cn=$(openssl crl2pkcs7 -nocrl -certfile $i | openssl pkcs7 -print_certs -text | grep -E '(Subject:|Not After)' | paste -d" " - - | tail -1  | awk '{print $NF}'| cut -d '=' -f2|sed 's! !\\ !g')
+
+  if [ "${n_validate_check}" == 'OK' ] ; then
+    n_validate=1;
+  else
+    n_validate=0;
+  fi
+
+  if [ "${o_chain_check}" -gt '2' ]; then
+    o_full_chain_validate=1;
+  else
+    o_full_chain_validate=0;
+  fi
+
+echo "cert_details,i_certFileName=$i_certFile,cert_cn=$cert_cn,issuer_cn=$issuer_cn,ca_cn=$ca_cn,j_certStartDate=$j_createDate GMT,k_certExpiryDate=$k_cn_expiry GMT,l_intermediate_CertExpiry=$l_int_expiry GMT,m_CAROOTExpiry=$m_root_expiry GMT,n_CertValidation=$n_validate,o_fullCertChainValidate=$o_full_chain_validate status=$j"
+
+done
+
+
