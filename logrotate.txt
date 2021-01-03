@@ -1,0 +1,19 @@
+/var/log/fluentd.out {
+        daily
+        size 1000m
+        compressext .gz
+        compress
+        delaycompress
+        dateformat -%Y%m%d-%s
+        ifempty
+        copytruncate
+        prerotate
+                SIZE=$(stat --printf='%s' /var/log/fluentd.out)
+                /bin/bash -c "tail -c $SIZE -f /var/log/tomcat/catalina.out > /var/log/fluentd.out" &
+        endscript
+        postrotate
+                pgrep tail | xargs kill -9
+                cat /var/log/tomcat/tmp.log >> /var/log/fluentd.out
+                rm /var/log/tomcat/tmp.log -f
+        endscript
+}
